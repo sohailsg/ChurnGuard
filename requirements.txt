@@ -10,3 +10,4 @@ flask>=3.0
 requests>=2.31
 psycopg2-binary>=2.9  # only needed for Postgres
 gunicorn>=22.0  # production WSGI server for review_app.py
+pytest>=8.0  # test suite
