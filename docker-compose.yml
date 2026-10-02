@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: churnguard
+      POSTGRES_PASSWORD: churnguard
+      POSTGRES_DB: churnguard
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://churnguard:churnguard@db:5432/churnguard
+      # Local dev only: same role as DATABASE_URL. In production, create a
+      # SELECT-only Postgres role on accounts/usage_daily/tickets and use it here.
+      AGENT_DATABASE_URL: postgresql://churnguard:churnguard@db:5432/churnguard
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-churnguard-local}
+      ANALYST_MODEL: ${ANALYST_MODEL:-anthropic/claude-sonnet-5-5}
+      CSM_MODEL: ${CSM_MODEL:-anthropic/claude-sonnet-5-5}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+    depends_on:
+      - db
+
+volumes:
+  db_data:

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.git/
+.env
+churnguard.db
+chroma/
+churn_model.joblib
+tests/

@@ -126,6 +126,30 @@ python pipeline.py learn       # saves -> playbook, rejections -> report
 
 Point Power BI at the `v_review_queue`, `v_kpi_daily`, and `v_outcomes` views in the same database.
 
+All settings have env-var overrides — see `.env.example` for the full list (database URLs, agent models, risk thresholds, Flask secret key, optional Zendesk credentials). Copy it to `.env` and fill in as needed; `DATABASE_URL`'s default (`sqlite:///churnguard.db`) is resolved relative to the current working directory, so run the commands above from the project root or set an absolute path.
+
+## Testing
+
+```bash
+python -m pytest -q
+```
+
+Run from the project root with the project's venv Python — `tests/test_tools_and_ui.py` imports `tests.test_pipeline_flow`, which requires `tests` to be importable as a package from the repo root. Covers SQL validation, guardrails, feature/label engineering, the pipeline with a stubbed crew, outcome labeling and the learning loop, agent tools, and the Flask review UI.
+
+## Deploying (self-hosted, with Coolify)
+
+The app is containerized (`Dockerfile`, `docker-compose.yml`) so it runs on any Docker host; [Coolify](https://coolify.io) is the recommended self-hosted PaaS since it has built-in Postgres provisioning and a scheduled-task feature that covers both the web app and the cron-style pipeline commands.
+
+1. **Try it locally first:** `docker compose up --build` starts Postgres + the review queue at `http://localhost:5000`. Run one-off commands against the same stack with `docker compose run web python pipeline.py seed` (or `init`/`backtest`/`train`/`run`).
+2. **In Coolify:**
+   - Add a **Postgres** resource (Coolify provisions it and gives you a connection string).
+   - Add a new **application** from this git repo; Coolify will detect and build the `Dockerfile`.
+   - Set env vars from `.env.example` on the application — at minimum `DATABASE_URL` and `AGENT_DATABASE_URL` pointed at the Coolify Postgres instance (use a SELECT-only role for `AGENT_DATABASE_URL` once you're on real data), plus `ANTHROPIC_API_KEY`/`ANALYST_MODEL`/`CSM_MODEL` or your `LLM_BASE_URL` for a self-hosted LLM.
+   - Expose port `5000` — this is the CSM review queue (`review_app.py` under gunicorn).
+   - Run `python pipeline.py init` (or `seed` for a demo) once via Coolify's one-off command/terminal feature to create tables and the playbook index before the first scheduled run.
+   - Add **Scheduled Tasks** in Coolify against the same application image: daily `python pipeline.py run`, and weekly `python pipeline.py outcomes && python pipeline.py learn`.
+3. **Power BI** connects to the same Postgres instance's `v_review_queue`, `v_kpi_daily`, and `v_outcomes` views — no extra deployment step needed, just network access to the DB.
+
 ## Design choices worth calling out
 
 - **No send capability in v1.** The agents can only write to a staging table; sending is a manual action by the CSM in their own mail client. This is a deliberate scope limit, not a missing feature.

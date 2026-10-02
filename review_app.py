@@ -1,5 +1,6 @@
 """CSM review queue (approve / edit / reject / mark sent). Run: python review_app.py  -> http://127.0.0.1:5000"""
 import json
+import os
 import re
 from datetime import datetime
 from difflib import SequenceMatcher
@@ -17,7 +18,7 @@ REJECT_REASONS = ["Wrong root cause", "Account not actually at risk", "Tone or w
 STATUSES = ["pending_review", "approved", "edited", "sent", "rejected", "guardrail_failed", "error", "holdout"]
 
 app = Flask(__name__)
-app.secret_key = "churnguard-local"  # only used for flash messages; this is a local tool
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "churnguard-local")  # override for any shared deployment
 
 PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">

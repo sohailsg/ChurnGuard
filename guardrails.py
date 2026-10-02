@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import re
-from functools import lru_cache
 
 from sqlalchemy import select
 
@@ -18,7 +17,6 @@ _ACCOUNT_RE = re.compile(r"\bA-\d{5}\b")
 _INTERNAL_ID_RE = re.compile(r"\b(?:Q-[0-9a-f]{8}|T-\d+|PB-\w+)\b")
 
 
-@lru_cache(maxsize=1)
 def _account_names() -> dict[str, str]:
     with engine.connect() as c:
         return dict(c.execute(select(accounts.c.account_id, accounts.c.name)).all())
@@ -70,7 +68,7 @@ def draft_issues(subject: str, body: str, account_id: str, contact_names: list[s
     if _INTERNAL_ID_RE.search(text):
         errs.append("draft exposes internal IDs (query refs, ticket or playbook IDs)")
     if not 50 <= len(body.split()) <= 260:
-        errs.append(f"body is {len(body.split())} words; keep it between 80 and 200")
+        errs.append(f"body is {len(body.split())} words; keep it between 50 and 260")
     return errs + leakage_issues(text, account_id, contact_names)
 
 

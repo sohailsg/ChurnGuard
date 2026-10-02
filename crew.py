@@ -25,7 +25,7 @@ INTERVENE_TASK = """Using the Churn Risk Profile for account {account_id} ({comp
 
 1. Call retention_playbook_search at least twice: once for the root cause and once for the strongest other signal.
 2. Pick the best-fitting strategy. playbook_refs must contain only entry IDs returned by the search.
-3. Draft an 80-200 word email to the customer's main contact. Greet with [CONTACT_FIRST_NAME] and sign off as [CSM_NAME]. Name the specific friction from the profile in plain customer language (no internal metrics, scores or IDs).
+3. Draft a 50-260 word email to the customer's main contact. Greet with [CONTACT_FIRST_NAME] and sign off as [CSM_NAME]. Name the specific friction from the profile in plain customer language (no internal metrics, scores or IDs).
 4. Do not mention discounts, refunds, credits, roadmap or release dates, or guarantees unless a cited entry's permits allow it, and then only within its constraints.
 5. Never include email addresses, phone numbers, real names or other customers."""
 
